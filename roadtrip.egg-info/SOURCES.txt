@@ -1,11 +1,11 @@
 CHANGES.txt
-MANIFEST.in
 README.txt
 development.ini
 production.ini
 setup.cfg
 setup.py
 roadtrip/__init__.py
+roadtrip/load_mongo.py
 roadtrip/tests.py
 roadtrip/views.py
 roadtrip.egg-info/PKG-INFO

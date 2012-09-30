@@ -3,7 +3,10 @@ import pymongo
 from pyramid.config import Configurator
 from pyramid.events import subscriber
 from pyramid.events import NewRequest
-from urllib.parse import urlparse
+try:
+    from urllib.parse import urlparse
+except:
+    from urlparse import urlparse
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
