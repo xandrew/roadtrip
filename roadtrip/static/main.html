@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas {
+        width: 100%;
+        height: 100%;
+      }
+      #map_container {
+        width: 100%;
+        height: 100%;
+        -webkit-transition: all 0s;
+      }
+      #map_container.zoomed {
+        -webkit-transform: scale(1);
+        -webkit-transition: all 5s;
+      }
+
+      #main_screen {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      #drive_button {
+        position: absolute;
+        top: 90%;
+        left: 70%;
+        z-index: 100; 
+        font-size:30px;
+        font-weight:bold;
+        font-style:italic;
+      }
+
+      .gallery {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        -webkit-transition: all 5s;
+      }
+
+      .image_pane {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        background-image: url('straws.png');
+        -webkit-transition: all 0.8s;
+        text-align: center;
+      }
+
+      .controlls {
+        -webkit-transition: all 0s;
+      }
+
+      .controlls.hidden {
+        -webkit-transition: all 2s;
+      }
+
+      .gallery_nav {
+        position: absolute;
+        top: 0px;
+        width: 30%;
+        height: 100%;
+        font-size:100px;
+        font-weight:900;
+      }
+
+      .gallery_nav.left {
+        text-shadow: 3px 0px 1px grey;
+        left: 0%;
+      }
+      .gallery_nav.right {
+        text-shadow: -3px 0px 1px grey;
+        left: 70%;
+      }
+
+      .arrow {
+        position: absolute;
+        margin-top: -20px;
+        margin-left: -10px;
+        top: 50%;
+        font-size:40px;
+        font-weight:bold;
+        cursor: default;
+        -webkit-user-select: none;
+      }
+
+      .gallery_nav.left .arrow {
+        left: 15%;
+      }
+      .gallery_nav.right .arrow {
+        left: 85%;
+      }
+
+      .car {
+        position: absolute;
+      }
+      .car_image {
+        width: 100%;
+        height: 100%;
+      }
+      .bigimage {
+        width: auto;
+        height: 100%;
+      }
+
+      .hidden {
+        opacity: 0;
+      }
+
+      #welcome_screen {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        text-align: center;
+        -webkit-transition: all 3s;
+      }
+
+      #title_text {
+        position: absolute;
+        top: 30%;
+        width: 100%;
+        left: 0px;
+        font-size:50px;
+        font-weight: bold;
+        text-align:center;
+        color: black;
+      }
+      
+    </style>
+    <script
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDMMlBlkH0IKD6jp1zxOj603lfpOW7doj8&sensor=false&libraries=geometry">
+    </script>
+    <script
+      src="http://code.jquery.com/jquery-1.7.1.min.js">
+    </script>
+    <script src="jss.js">
+    </script>
+    <script src="gallery.js"></script>
+    <script src="animap.js"></script>
+    <script src="roadtrip.js"></script>
+  </head>
+  <body onload="RoadTrip('portugal', 3)">
+    <div id="main_screen">
+      <div id="map_container" class="zoomed">
+	<div id="map_canvas"></div>
+      </div>
+      <div id="welcome_screen">
+	<img class='bigimage' src="portugal/IMG_4389.JPG"/>
+	<div id="title_text">Tour The Rice 2012, Portugal</div>
+      </div>
+    </div>
+    <div class="controlls">
+      <button id="drive_button"><img width=50 height=30 src="bicycle.png"/> Let's get going!</button>
+    </div>
+  </body>
+</html>

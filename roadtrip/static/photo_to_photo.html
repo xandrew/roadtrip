@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas {
+        width: 100%;
+        height: 100%;
+      }
+      #map_container {
+        width: 100%;
+        height: 100%;
+        -webkit-transition: all 5s;
+      }
+      #map_container.zoomed {
+        -webkit-transform: scale(10);
+      }
+
+      #main_screen {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      #route_controlls {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        z-index: 100;
+      }
+
+      .gallery {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        -webkit-transition: all 5s;
+      }
+      .gallery_nav {
+        position: absolute;
+        top: 0px;
+        width: 30%;
+        height: 100%;
+        font-size:40px;
+        font-weight:bold;
+        -webkit-transition: all 0s;
+      }
+
+      .gallery_nav.hidden {
+        -webkit-transition: all 2s;
+      }
+
+      .gallery_nav.left {
+        left: 0%;
+      }
+      .gallery_nav.right {
+        left: 70%;
+      }
+
+      .arrow {
+        position: absolute;
+        margin-top: -20px;
+        margin-left: -10px;
+        top: 50%;
+        font-size:40px;
+        font-weight:bold;
+        cursor: default;
+        -webkit-user-select: none;
+      }
+
+      .gallery_nav.left .arrow {
+        left: 15%;
+      }
+      .gallery_nav.right .arrow {
+        left: 85%;
+      }
+
+      .car {
+        position: absolute;
+      }
+      .car_image {
+        width: 100%;
+        height: 100%;
+      }
+      .bigimage {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        -webkit-transition: all 0.8s;
+      }
+
+      .hidden {
+        opacity: 0;
+      }
+      
+    </style>
+    <script
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDMMlBlkH0IKD6jp1zxOj603lfpOW7doj8&sensor=false">
+    </script>
+    <script
+      src="http://code.jquery.com/jquery-1.7.1.min.js">
+    </script>
+    <script src="jss.js">
+    </script>
+    <script src="photo_to_photo.js">
+    </script>
+  </head>
+  <body onload="initialize()">
+    <div id="main_screen">
+      <div id="map_container" class="zoomed hidden">
+	<div id="map_canvas"></div>
+      </div>
+    </div>
+    <div id="route_controlls">
+      From:<input type="text" id="from" value="Sydney, Australia">
+      To:<input type="text" id="to" value="Brisbane, Australia">
+      <button onclick="buttonClick()">Drive!</button>
+    </div>
+  </body>
+</html>
