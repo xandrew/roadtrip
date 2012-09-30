@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas {
+        width: 100%;
+        height: 100%;
+      }
+      #map_container {
+        width: 80%;
+        height: 100%;
+        float: left;
+      }
+
+      #route_controlls {
+        width: 20%;
+        height: 100%;
+        float: left;
+      }
+    </style>
+    <script
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDMMlBlkH0IKD6jp1zxOj603lfpOW7doj8&sensor=false">
+    </script>
+    <script
+      src="http://code.jquery.com/jquery-1.7.1.min.js">
+    </script>
+    <script src="pather.js">
+    </script>
+  </head>
+  <body onload="Pather()">
+    <div id="map_container" class="zoomed hidden">
+	<div id="map_canvas"></div>
+    </div>
+   <div id="route_controlls">
+     <div id="rc_title">Create your route!</div>
+     <button id="drive">Go!</button>
+    </div>
+  </body>
+</html>
