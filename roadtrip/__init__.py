@@ -31,5 +31,7 @@ def main(global_config, **settings):
 
     config.add_route('home', '/')
     config.add_route('get_map_path', '/get_map_path')
+    config.add_route('all_images', '/all_images')
+
     config.scan()
     return config.make_wsgi_app()

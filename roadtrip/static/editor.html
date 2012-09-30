@@ -10,15 +10,40 @@
         height: 100%;
       }
       #map_container {
-        width: 80%;
+        width: 60%;
+        height: 100%;
+        float: left;
+      }
+      #projector {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 60%;
+        height: 0%;
+      }
+
+      .projector_img {
+        max-height: 100%;
+        max-width: 100%;
+        width: auto;
+      }
+
+      #editor_controlls {
+        width: 40%;
         height: 100%;
         float: left;
       }
 
-      #route_controlls {
-        width: 20%;
-        height: 100%;
+      .thumb {
+        text-align: center;
+        height: 100px;
+        width: 100px;
         float: left;
+      }
+
+      .thumb_img {
+        height: 60px;
+        width: auto;
       }
     </style>
     <script
@@ -27,16 +52,21 @@
     <script
       src="http://code.jquery.com/jquery-1.7.1.min.js">
     </script>
+   <script src="thumb_collection.js">
+    </script>
+    <script src="stop.js">
+    </script>
     <script src="pather.js">
     </script>
+    <script src="editor.js">
+    </script>
   </head>
-  <body onload="Pather()">
+  <body onload="Editor('portugal')">
     <div id="map_container" class="zoomed hidden">
 	<div id="map_canvas"></div>
+	<div id="projector"></div>
     </div>
-   <div id="route_controlls">
-     <div id="rc_title">Create your route!</div>
-     <button id="drive">Go!</button>
+    <div id="editor_controlls">
     </div>
-  </body>
+ </body>
 </html>
