@@ -41,6 +41,10 @@ function Editor(roadtrip_id) {
   div_.append(main_collection_.GetDiv());
   div_.append(BreakDiv());
 
+  function toJSON() {
+    
+  }
+
   $.getJSON('/all_images',
 	    {
 	      id: roadtrip_id

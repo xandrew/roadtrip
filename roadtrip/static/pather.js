@@ -16,6 +16,9 @@ function Pather(map, set_active_callback) {
     var outer_div_ = $('<div></div>');
     var step_div_ = $('<div></div>');
     var input_ = $('<input type=text></input>');
+
+    var directions_to_renderer_;
+
     step_div_.append(input_);
 
     outer_div_.append(step_div_);
@@ -27,13 +30,47 @@ function Pather(map, set_active_callback) {
       outer_div_.insertAfter(start_);
     }
 
+    function receiveDirections(result, status) {
+      if (status != google.maps.DirectionsStatus.OK) {
+	alert("Error: " + status);
+      } else {
+	if (directions_to_renderer_ !== undefined) {
+	  directions_to_renderer_.setMap(null);
+	}
+	directions_to_renderer_ = new google.maps.DirectionsRenderer();
+	directions_to_renderer_.setOptions(
+	  {
+	    draggable: true,
+	    preserveViewport: true,
+	    suppressMarkers: true
+	  });
+	directions_to_renderer_.setMap(map);
+	directions_to_renderer_.setDirections(result);
+      }
+    }
+
+    function reDraw() {
+      if (prev_ !== undefined) {
+	var dir_request = {
+	  origin: prev_.Value(),
+	  destination: api_.Value(),
+	  provideRouteAlternatives: false,
+	  travelMode: google.maps.TravelMode.WALKING,
+	  unitSystem: google.maps.UnitSystem.METRIC
+	};
+	directions_service_.route(dir_request, receiveDirections);
+      }
+    }
+
     var api_ = {
-      'Div': function() { return outer_div_; },
-      'Next': function() { return next_; },
-      'Prev': function() { return prev_; },
-      'SetNext': function(next) { next_ = next; },
-      'SetPrev': function(prev) { prev_ = prev; },
-      'Value': function() { return input_.val(); }
+      Div: function() { return outer_div_; },
+      Next: function() { return next_; },
+      Prev: function() { return prev_; },
+      SetNext: function(next) { next_ = next; },
+      SetPrev: function(prev) { prev_ = prev; },
+      Value: function() { return input_.val(); },
+      GetStop: function() { return stop_; },
+      ReDraw: reDraw
     };
 
     var pin_button_ = $('<button>!</button>');
@@ -51,7 +88,10 @@ function Pather(map, set_active_callback) {
     add_button_.click(
       function() {
 	next_ = PathStep(api_, next_);
-      });      
+	if (next_.Next() !== undefined) {
+	  next_.Next().SetPrev(next_);
+	}
+      });
 
     var remove_button_ = $('<button>-</button>');
     step_div_.append(remove_button_);
@@ -61,6 +101,9 @@ function Pather(map, set_active_callback) {
 	  prev_.SetNext(next_);
 	  next_.SetPrev(prev_);
 	  outer_div_.remove();
+	  if (directions_to_renderer_ !== undefined) {
+	    directions_to_renderer_.setMap(null);
+	  }
 	}
       });
 
@@ -83,63 +126,20 @@ function Pather(map, set_active_callback) {
   var first_step_ = PathStep();
 
   function reDraw() {
-    var origin;
-    var destination;
-    var waypoints = [];
     var act_step = first_step_;
     while (act_step !== undefined) {
-      var used = false;
-      if (origin === undefined) {
-	origin = act_step.Value();
-	used = true;
-      }
-      var next_step = act_step.Next();
-      if (next_step === undefined) {
-	destination = act_step.Value();
-	used = true;
-      }
-      if (!used) {
-	waypoints.push({
-			 location: act_step.Value(),
-			 stopover: false
-		       });
-      }
-      act_step = next_step;
+      act_step.ReDraw();
+      act_step = act_step.Next();
     }
-    var dir_request = {
-      origin: origin,
-      destination: destination,
-      waypoints: waypoints,
-      provideRouteAlternatives: false,
-      travelMode: google.maps.TravelMode.WALKING,
-      unitSystem: google.maps.UnitSystem.METRIC
-    };
-    directions_service_.route(dir_request, receiveDirections);
   }
 
   redraw_button_.click(reDraw);
 
-  function receiveDirections(result, status) {
-    if (status != google.maps.DirectionsStatus.OK) {
-      alert("Error");
-    } else {
-      var path = result.routes[0].overview_path;
-      console.log(JSON.stringify(path));
-      map.panTo(path[0]);
-      if (path_line_ !== undefined) {
-	path_line_.setMap(null);
-      }
-      path_line_ = new google.maps.Polyline(
-	{
-	  path: result.routes[0].overview_path,
-	  strokeColor: "#FF0000",
-	  strokeOpacity: 1.0,
-	  strokeWeight: 2});
-      path_line_.setMap(map);
-    }
-  }
-
   return {
-    GetDiv: function() { return div_; }
+    GetDiv: function() { return div_; },
+    GetFirstStep: function() { return first_step_; },
+    ReDraw: function(on_ready) {
+      reDraw();
+    }
   };
 }

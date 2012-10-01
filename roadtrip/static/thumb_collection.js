@@ -8,6 +8,13 @@ function Thumb(projector_div, thumb_url, full_url) {
   var minus_button_ = $('<button>-</button>');
   var minus_handler_;
 
+  function url() {
+    if (full_url === defined) {
+      return full_url;
+    }
+    return thumb_url;
+  }
+
   function add_handlers_() {
     plus_button_.click(function() {
 			 if (plus_handler_ !== undefined) {
@@ -21,11 +28,7 @@ function Thumb(projector_div, thumb_url, full_url) {
 			});
     image_.click(
       function() {
-	var url = full_url;
-	if (url === undefined) {
-	  url = thumb_url;
-	}
-	var big_image = $('<img class="projector_img" src="' + url + '"/>');
+	var big_image = $('<img class="projector_img" src="' + url() + '"/>');
 	projector_div.height('100%');
 	projector_div.empty();
 	projector_div.append(big_image);
@@ -34,46 +37,72 @@ function Thumb(projector_div, thumb_url, full_url) {
   }
 
   var api_ = {
-    'AppendTo': function(collection) {
-      collection.GetCollecterDiv().append(div_);
+    AppendTo: function(collection) {
+      collection.Append(api_);
       parent_ = collection;
       add_handlers_();
     },
-    'Remove': function() {
-      div_.remove();
+    Remove: function() {
+      if (parent_ !== undefined) {
+	parent_.Remove(api_);
+      }
       parent_ = undefined;
     },
-    'ShowPlus': function(handler) {
+    ShowPlus: function(handler) {
       div_.append(plus_button_);
       plus_handler_ = handler;
     },
-    'HidePlus': function() {
+    HidePlus: function() {
       plus_button_.remove();
       plus_handler_ = undefined;
     },
-    'ShowMinus': function(handler) {
+    ShowMinus: function(handler) {
       div_.append(minus_button_);
       minus_handler_ = handler;
     },
-    'HideMinus': function() {
+    HideMinus: function() {
       minus_button_.remove();
       minus_handler_ = undefined;
-    }
+    },
+    GetDiv: function() {
+      return div_;
+    },
+    GetUrl: url
   };
-
 
   return api_;
 }
 
 function ThumbCollection() {
   var div_ = $('<div class="thumb_collection"></div>');
+  var thumbs_ = [];
+
+  function indexOf(thumb) {
+    for (var i = 0; i < thumbs_.length; i++) {
+      if (thumb === thumbs_[i]) {
+	return i;
+      }
+    }
+    return undefined;
+  }
 
   return {
-    'GetDiv': function() {
+    GetDiv: function() {
       return div_;
     },
-    'GetCollecterDiv': function() {
-      return div_;
-    }
+    Append: function(thumb) {
+      if (indexOf(thumb) === undefined) {
+	div_.append(thumb.GetDiv());
+	thumbs_.push(thumb);
+      }
+    },
+    Remove: function(thumb) {
+      var idx = indexOf(thumb);
+      if (idx !== undefined) {
+	thumb.GetDiv().remove();
+	thumbs_.splice(idx, 1);
+      }
+    },
+    GetThumbs: function() { return thumbs_; }
   };
 }
