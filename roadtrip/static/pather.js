@@ -1,6 +1,8 @@
 function Pather(map, set_active_callback) {
   var directions_service_ = new google.maps.DirectionsService();
+  var geocoder_ = new google.maps.Geocoder();
   var path_line_;
+  var active_step_;
 
   var div_ = $('<div></div>');
   var start_ = $('<div></div>');
@@ -17,6 +19,7 @@ function Pather(map, set_active_callback) {
     var step_div_ = $('<div></div>');
     var input_ = $('<input type=text></input>');
 
+    var marker_;
     var directions_to_renderer_;
 
     step_div_.append(input_);
@@ -49,8 +52,8 @@ function Pather(map, set_active_callback) {
       }
     }
 
-    function reDraw() {
-      if (prev_ !== undefined) {
+    function reDrawInto() {
+      if (prev_ !== undefined && api_.Value() != '' && prev_.Value() != '') {
 	var dir_request = {
 	  origin: prev_.Value(),
 	  destination: api_.Value(),
@@ -59,6 +62,54 @@ function Pather(map, set_active_callback) {
 	  unitSystem: google.maps.UnitSystem.METRIC
 	};
 	directions_service_.route(dir_request, receiveDirections);
+      } else {
+	if (directions_to_renderer_ !== undefined) {
+	  directions_to_renderer_.setMap(null);
+	  directions_to_renderer_ = undefined;
+	}
+      }
+    }
+
+    function removeMarker() {
+      if (marker_ !== undefined) {
+	marker_.setMap(null);
+	marker_ = undefined;
+      }
+    }
+
+    function receiveGeoCode(result, status) {
+      removeMarker();
+      if (status == google.maps.GeocoderStatus.OK && result.length > 0) {
+	marker_ = new google.maps.Marker(
+	  {
+	    animation: google.maps.Animation.DROP,
+	    draggable: true,
+	    map: map,
+	    position: result[0].geometry.location
+	  });
+	google.maps.event.addListener(
+	  marker_,
+	  'dragend',
+	  function() {
+	    input_.val(marker_.getPosition().toString());
+	    valueChanged();  
+	  });
+      }
+    }
+
+    function reDrawMarker() {
+      if (api_.Value() != '') {
+	geocoder_.geocode({ address: api_.Value() }, receiveGeoCode);
+      } else {
+	removeMarker();
+      }
+    }
+
+    function valueChanged() {
+      reDrawMarker();
+      reDrawInto();
+      if (next_ !== undefined) {
+	next_.ReDrawInto();
       }
     }
 
@@ -67,10 +118,10 @@ function Pather(map, set_active_callback) {
       Next: function() { return next_; },
       Prev: function() { return prev_; },
       SetNext: function(next) { next_ = next; },
-      SetPrev: function(prev) { prev_ = prev; },
+      SetPrev: function(prev) { prev_ = prev; reDrawInto(); },
       Value: function() { return input_.val(); },
       GetStop: function() { return stop_; },
-      ReDraw: reDraw
+      ReDrawInto: reDrawInto
     };
 
     var pin_button_ = $('<button>!</button>');
@@ -79,8 +130,13 @@ function Pather(map, set_active_callback) {
       function() {
 	google.maps.event.addListenerOnce(map, 'click', function(e) {
 					    input_.val(e.latLng.toString());
+					    valueChanged();
 					  });
       });
+
+    input_.blur(function() {
+		  valueChanged();
+		});
 
 
     var add_button_ = $('<button>+</button>');
@@ -124,11 +180,12 @@ function Pather(map, set_active_callback) {
   }
 
   var first_step_ = PathStep();
+  active_step_ = first_step_;
 
   function reDraw() {
     var act_step = first_step_;
     while (act_step !== undefined) {
-      act_step.ReDraw();
+      act_step.ReDrawInto();
       act_step = act_step.Next();
     }
   }
@@ -140,6 +197,9 @@ function Pather(map, set_active_callback) {
     GetFirstStep: function() { return first_step_; },
     ReDraw: function(on_ready) {
       reDraw();
+    },
+    GetActiveStep: function() {
+      return act_step_;
     }
   };
 }

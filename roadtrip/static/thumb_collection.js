@@ -9,7 +9,7 @@ function Thumb(projector_div, thumb_url, full_url) {
   var minus_handler_;
 
   function url() {
-    if (full_url === defined) {
+    if (full_url !== undefined) {
       return full_url;
     }
     return thumb_url;
