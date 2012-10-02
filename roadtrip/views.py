@@ -15,4 +15,4 @@ def map_path_view(request):
 @view_config(route_name='all_images', renderer='json')
 def all_images_view(request):
     trip_id = request.params['id']
-    return ['/static/%s/%s' % (trip_id, fn) for fn in os.listdir('roadtrip/static/' + trip_id)]
+    return ['/static/%s/%s' % (trip_id, fn) for fn in sorted(os.listdir('roadtrip/static/' + trip_id))]
