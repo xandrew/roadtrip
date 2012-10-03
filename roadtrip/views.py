@@ -1,3 +1,4 @@
+import json
 import os
 
 from pyramid.view import view_config
@@ -11,6 +12,14 @@ def map_path_view(request):
     stage = 'stage%d' % int(request.params['stage'])
     trip_id = request.params['id']
     return request.db.trips.find_one({'trip_id': trip_id}, { stage: 1})[stage]
+
+@view_config(route_name='save', renderer='json')
+def save_view(request):
+    trip_id = request.params['id']
+    data = json.loads(request.params['data'])
+    request.db.trips.remove({'trip_id': trip_id})
+    request.db.trips.insert(data)
+    return {}
 
 def DictForImage(trip_id, image):
     return { 'url': '/static/%s/%s' % (trip_id, image),

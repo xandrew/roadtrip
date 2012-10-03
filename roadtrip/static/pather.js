@@ -149,6 +149,12 @@ function Pather(map, default_thumb_collection) {
       Deactivate: function() {
 	outer_div_.css('background-color', 'white');
       },
+      GetPath: function() {
+	if (directions_to_renderer_ === undefined) {
+	  return undefined;
+	}
+	return directions_to_renderer_.getDirections().routes[0].overview_path;
+      },
       ReDrawInto: reDrawInto
     };
 
