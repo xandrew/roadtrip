@@ -73,8 +73,15 @@ function Thumb(projector_div, thumb_url, full_url) {
   return api_;
 }
 
+function BreakDiv() {
+  return $('<div style="clear:both"></div>');  
+}
+
 function ThumbCollection() {
+  var outer_div_ = $('<div></div>');
   var div_ = $('<div class="thumb_collection"></div>');
+  outer_div_.append(div_);
+  outer_div_.append(BreakDiv());
   var thumbs_ = [];
 
   function indexOf(thumb) {
@@ -86,9 +93,14 @@ function ThumbCollection() {
     return undefined;
   }
 
+  function removeThumb(thumb, idx) {
+    thumb.GetDiv().remove();
+    thumbs_.splice(idx, 1);
+  }
+
   return {
     GetDiv: function() {
-      return div_;
+      return outer_div_;
     },
     Append: function(thumb) {
       if (indexOf(thumb) === undefined) {
@@ -96,12 +108,25 @@ function ThumbCollection() {
 	thumbs_.push(thumb);
       }
     },
+    Prepend: function(thumb) {
+      if (indexOf(thumb) === undefined) {
+	div_.prepend(thumb.GetDiv());
+	thumbs_.splice(0, 0, thumb);
+      }
+    },
     Remove: function(thumb) {
       var idx = indexOf(thumb);
       if (idx !== undefined) {
-	thumb.GetDiv().remove();
-	thumbs_.splice(idx, 1);
+	removeThumb(thumb, idx);
       }
+    },
+    PopLast: function() {
+      if (thumbs_.length > 0) {
+	var thumb = thumbs_[thumbs_.length - 1];
+	removeThumb(thumb, thumbs_.length - 1);
+	return thumb;
+      }
+      return undefined;
     },
     GetThumbs: function() { return thumbs_; }
   };

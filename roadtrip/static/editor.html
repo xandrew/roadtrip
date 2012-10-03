@@ -29,9 +29,10 @@
       }
 
       #editor_controlls {
-        width: 40%;
         height: 100%;
+        width: 40%;
         float: left;
+        overflow: scroll;
       }
 
       .thumb {
@@ -39,11 +40,22 @@
         height: 100px;
         width: 100px;
         float: left;
+        border-style: solid;
+        border-width: 1px;
+        margin: 2px;
+        border-radius: 5px;
+        padding: 5px;
       }
 
       .thumb_img {
         height: 60px;
         width: auto;
+      }
+
+      .path_step {
+        width: 80%;
+        -webkit-box-shadow: 10px 10px 5px #888;
+        margin-bottom:14px;
       }
     </style>
     <script
@@ -53,8 +65,6 @@
       src="http://code.jquery.com/jquery-1.7.1.min.js">
     </script>
    <script src="thumb_collection.js">
-    </script>
-    <script src="stop.js">
     </script>
     <script src="pather.js">
     </script>

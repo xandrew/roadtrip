@@ -12,7 +12,13 @@ def map_path_view(request):
     trip_id = request.params['id']
     return request.db.trips.find_one({'trip_id': trip_id}, { stage: 1})[stage]
 
+def DictForImage(trip_id, image):
+    return { 'url': '/static/%s/%s' % (trip_id, image),
+             'thumb': '/static/%s/thumb/%s' % (trip_id, image),
+             }
+
+
 @view_config(route_name='all_images', renderer='json')
 def all_images_view(request):
     trip_id = request.params['id']
-    return ['/static/%s/%s' % (trip_id, fn) for fn in sorted(os.listdir('roadtrip/static/' + trip_id))]
+    return [DictForImage(trip_id, fn) for fn in sorted(os.listdir('roadtrip/static/' + trip_id)) if fn.endswith('JPG')]

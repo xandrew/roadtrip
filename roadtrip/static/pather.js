@@ -1,4 +1,4 @@
-function Pather(map, set_active_callback) {
+function Pather(map, default_thumb_collection) {
   var directions_service_ = new google.maps.DirectionsService();
   var geocoder_ = new google.maps.Geocoder();
   var path_line_;
@@ -8,24 +8,23 @@ function Pather(map, set_active_callback) {
   var start_ = $('<div></div>');
   div_.append(start_);
 
-  var redraw_button_ = $('<button>Redraw</button>');
-  div_.append(redraw_button_);
-
   function PathStep(previous_step, next_step) {
     var prev_ = previous_step;
     var next_ = next_step;
 
-    var outer_div_ = $('<div></div>');
+    var outer_div_ = $('<div class="path_step"></div>');
     var step_div_ = $('<div></div>');
     var input_ = $('<input type=text></input>');
 
     var marker_;
     var directions_to_renderer_;
 
+    var thumb_collection_ = ThumbCollection();
+
     step_div_.append(input_);
 
     outer_div_.append(step_div_);
-    var stop_;
+    outer_div_.append(thumb_collection_.GetDiv());
 
     if (prev_ !== undefined) {
       outer_div_.insertAfter(prev_.Div());
@@ -94,6 +93,7 @@ function Pather(map, set_active_callback) {
 	    input_.val(marker_.getPosition().toString());
 	    valueChanged();  
 	  });
+	map.panTo(marker_.getPosition());
       }
     }
 
@@ -113,6 +113,21 @@ function Pather(map, set_active_callback) {
       }
     }
 
+    function remove() {
+      prev_.SetNext(next_);
+      next_.SetPrev(prev_);
+      outer_div_.remove();
+      if (directions_to_renderer_ !== undefined) {
+	directions_to_renderer_.setMap(null);
+      }
+      removeMarker();
+      var thumb = thumb_collection_.PopLast();
+      while (thumb !== undefined) {
+	default_thumb_collection.Prepend(thumb);
+	thumb = thumb_collection_.PopLast();
+      }
+    }
+
     var api_ = {
       Div: function() { return outer_div_; },
       Next: function() { return next_; },
@@ -120,7 +135,20 @@ function Pather(map, set_active_callback) {
       SetNext: function(next) { next_ = next; },
       SetPrev: function(prev) { prev_ = prev; reDrawInto(); },
       Value: function() { return input_.val(); },
-      GetStop: function() { return stop_; },
+      GetCollection: function() { return thumb_collection_; },
+      Activate: function() {
+	if (active_step_ === api_) {
+	  return;
+	}
+	if (active_step_ !== undefined) {
+	  active_step_.Deactivate();
+	}
+	active_step_ = api_;
+	outer_div_.css('background-color', 'grey');
+      },
+      Deactivate: function() {
+	outer_div_.css('background-color', 'white');
+      },
       ReDrawInto: reDrawInto
     };
 
@@ -152,35 +180,21 @@ function Pather(map, set_active_callback) {
     var remove_button_ = $('<button>-</button>');
     step_div_.append(remove_button_);
     remove_button_.click(
-      function() {
+      function () {
 	if ((prev_ !== undefined) && (next_ !== undefined)) {
-	  prev_.SetNext(next_);
-	  next_.SetPrev(prev_);
-	  outer_div_.remove();
-	  if (directions_to_renderer_ !== undefined) {
-	    directions_to_renderer_.setMap(null);
-	  }
+	  remove();
 	}
       });
 
-    var stop_button_ = $('<button>StopHere</button>');
-    function addStopButton() {
-      step_div_.append(stop_button_);
-      stop_button_.click(
-	function() {
-	  stop_ = Stop(set_active_callback);
-	  outer_div_.append(stop_.GetDiv());
-	  stop_button_.remove();
-	  //stop_.OnRemove(addStopButton);
-	});
-    }
+    outer_div_.click(function() { api_.Activate(); });
+    outer_div_.find('input').focus(function() { api_.Activate(); });
+    outer_div_.find('button').focus(function() { api_.Activate(); });
 
-    addStopButton();
     return api_;
   }
 
   var first_step_ = PathStep();
-  active_step_ = first_step_;
+  first_step_.Activate();
 
   function reDraw() {
     var act_step = first_step_;
@@ -190,8 +204,6 @@ function Pather(map, set_active_callback) {
     }
   }
 
-  redraw_button_.click(reDraw);
-
   return {
     GetDiv: function() { return div_; },
     GetFirstStep: function() { return first_step_; },
@@ -199,7 +211,7 @@ function Pather(map, set_active_callback) {
       reDraw();
     },
     GetActiveStep: function() {
-      return act_step_;
+      return active_step_;
     }
   };
 }
