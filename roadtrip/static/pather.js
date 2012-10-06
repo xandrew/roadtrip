@@ -1,25 +1,34 @@
-function Pather(map, default_thumb_collection) {
+function Pather(map, default_thumb_collection, roadtrip_id, projector) {
   var directions_service_ = new google.maps.DirectionsService();
   var geocoder_ = new google.maps.Geocoder();
-  var path_line_;
+  var first_step_;
+  var last_step_;
   var active_step_;
 
   var div_ = $('<div></div>');
   var start_ = $('<div></div>');
   div_.append(start_);
 
-  function PathStep(previous_step, next_step) {
+  function PathStep(json_spec, previous_step, next_step) {
     var prev_ = previous_step;
     var next_ = next_step;
+    var vehicle_;
+    var zoom_ = 10;
 
     var outer_div_ = $('<div class="path_step"></div>');
     var step_div_ = $('<div></div>');
     var input_ = $('<input type=text></input>');
-
+    var vehicle_selector_ = $('<select>' + 
+			      '<option value="bicycle">Bicycle</option>' +
+			      '<option value="car">Car</option>' +
+			      '<option value="plane">Airplane</option>' +
+			      '<option value="walk">Walk</option>' +
+			      '</select>');
     var marker_;
     var directions_to_renderer_;
+    var directions_real_;
 
-    var thumb_collection_ = ThumbCollection();
+    var thumb_collection_ = ThumbCollection(roadtrip_id, projector);
 
     step_div_.append(input_);
 
@@ -32,35 +41,114 @@ function Pather(map, default_thumb_collection) {
       outer_div_.insertAfter(start_);
     }
 
-    function receiveDirections(result, status) {
+    function polyDirections(path) {
+      directions_real_ = false;
+      directions_to_renderer_ = new google.maps.Polyline({ path: path });
+      directions_to_renderer_.setMap(map);
+    }
+
+    function realDirections(directions) {
+      directions_real_ = true;
+      directions_to_renderer_ = new google.maps.DirectionsRenderer();
+      directions_to_renderer_.setOptions(
+	{
+	  draggable: true,
+	  preserveViewport: true,
+	  suppressMarkers: true
+	});
+      directions_to_renderer_.setDirections(directions);
+      directions_to_renderer_.setMap(map);
+    }
+
+    function initFromJSON(json_spec) {
+      if (json_spec.path !== undefined) {
+	var path = new Array();
+	$.each(json_spec.path, function(key, val) {
+		 var ll = new google.maps.LatLng(val.Xa, val.Ya);
+		 path.push(ll);
+	       });
+	polyDirections(path);
+	vehicle_selector_.val(json_spec.vehicle);
+	vehicle_ = json_spec.vehicle;
+      }
+
+      if (json_spec.marker !== undefined) {
+	var marker_position = new google.maps.LatLng(json_spec.marker.Xa,
+						     json_spec.marker.Ya);
+	receiveGeoCode(
+	  [{geometry: {location: marker_position}}],
+	  google.maps.GeocoderStatus.OK);
+      }
+
+      if (json_spec.input_text !== undefined) {
+	input_.val(json_spec.input_text);
+      }
+
+      if (json_spec.zoom !== undefined) {
+	zoom_ = json_spec.zoom;
+      }
+
+      if (json_spec.images !== undefined) {
+	for (var i = 0; i < json_spec.images.length; i++) {
+	  thumb_collection_.AddImage(json_spec.images[i]);
+	}
+      }
+    }
+
+    function toJSON() {
+      var json_spec = {};
+      json_spec.path = api_.GetPath();
+      json_spec.vehicle = vehicle_;
+      json_spec.input_text = input_.val();
+      json_spec.zoom = zoom_;
+      json_spec.images = [];
+      json_spec.marker = marker_.getPosition();
+      var thumbs = thumb_collection_.GetThumbs();
+      for (var i = 0; i < thumbs.length; i++) {
+	json_spec.images.push(thumbs[i].GetImageId());
+      }
+      return json_spec;
+    }
+
+    initFromJSON(json_spec);
+
+    function receiveDirections(vehicle, result, status) {
       if (status != google.maps.DirectionsStatus.OK) {
 	alert("Error: " + status);
       } else {
+	vehicle_ = vehicle;
 	if (directions_to_renderer_ !== undefined) {
 	  directions_to_renderer_.setMap(null);
 	}
-	directions_to_renderer_ = new google.maps.DirectionsRenderer();
-	directions_to_renderer_.setOptions(
-	  {
-	    draggable: true,
-	    preserveViewport: true,
-	    suppressMarkers: true
-	  });
-	directions_to_renderer_.setMap(map);
-	directions_to_renderer_.setDirections(result);
+	if (vehicle != 'plane') {
+	  realDirections(result);
+	} else {
+	  var start = result.routes[0].overview_path[0];
+	  var end = result.routes[0].overview_path.slice(-1)[0];
+	  polyDirections([start, end]);
+	}
       }
     }
 
     function reDrawInto() {
       if (prev_ !== undefined && api_.Value() != '' && prev_.Value() != '') {
+	var vehicle = vehicle_selector_.val();
+	var mode;
+	if ((vehicle == 'car') || (vehicle == 'plane')) {
+	  mode = google.maps.TravelMode.DRIVING;
+	} else {
+	  mode = google.maps.TravelMode.WALKING;
+	}
 	var dir_request = {
 	  origin: prev_.Value(),
 	  destination: api_.Value(),
 	  provideRouteAlternatives: false,
-	  travelMode: google.maps.TravelMode.WALKING,
+	  travelMode: mode,
 	  unitSystem: google.maps.UnitSystem.METRIC
 	};
-	directions_service_.route(dir_request, receiveDirections);
+	directions_service_.route(dir_request, function(result, status) {
+				    receiveDirections(vehicle, result, status);
+				  });
       } else {
 	if (directions_to_renderer_ !== undefined) {
 	  directions_to_renderer_.setMap(null);
@@ -153,9 +241,29 @@ function Pather(map, default_thumb_collection) {
 	if (directions_to_renderer_ === undefined) {
 	  return undefined;
 	}
-	return directions_to_renderer_.getDirections().routes[0].overview_path;
+	console.log(vehicle_);
+	if (directions_real_) {
+	  return directions_to_renderer_.getDirections().routes[0].overview_path;
+	} else {
+	  return directions_to_renderer_.getPath().getArray();
+	}
       },
-      ReDrawInto: reDrawInto
+      GetVehicle: function() {
+	return vehicle_;
+      },
+      GetZoom: function() {
+	return zoom_;
+      },
+      AddAfter: function(json_spec) {
+	next_ = PathStep(json_spec, api_, next_);
+	if (next_.Next() !== undefined) {
+	  next_.Next().SetPrev(next_);
+	} else {
+	  last_step_ = next_;
+	}
+      },
+      ReDrawInto: reDrawInto,
+      ToJSON: toJSON
     };
 
     var pin_button_ = $('<button>!</button>');
@@ -175,13 +283,9 @@ function Pather(map, default_thumb_collection) {
 
     var add_button_ = $('<button>+</button>');
     step_div_.append(add_button_);
-    add_button_.click(
-      function() {
-	next_ = PathStep(api_, next_);
-	if (next_.Next() !== undefined) {
-	  next_.Next().SetPrev(next_);
-	}
-      });
+    add_button_.click(function() {
+			api_.AddAfter({});
+		      });
 
     var remove_button_ = $('<button>-</button>');
     step_div_.append(remove_button_);
@@ -192,6 +296,17 @@ function Pather(map, default_thumb_collection) {
 	}
       });
 
+    var use_zoom_button_ = $('<button>Oo.</button>');
+    step_div_.append(use_zoom_button_);
+    use_zoom_button_.click(
+      function () {
+	zoom_ = map.getZoom();
+	console.log('Zoom set to: ' + zoom_);
+      });
+
+    step_div_.append(vehicle_selector_);
+    vehicle_selector_.change(reDrawInto);
+
     outer_div_.click(function() { api_.Activate(); });
     outer_div_.find('input').focus(function() { api_.Activate(); });
     outer_div_.find('button').focus(function() { api_.Activate(); });
@@ -199,6 +314,7 @@ function Pather(map, default_thumb_collection) {
     return api_;
   }
 
+  /*
   var first_step_ = PathStep();
   first_step_.Activate();
 
@@ -207,6 +323,15 @@ function Pather(map, default_thumb_collection) {
     while (act_step !== undefined) {
       act_step.ReDrawInto();
       act_step = act_step.Next();
+    }
+  }*/
+
+  function addStep(json_spec) {
+    if (last_step_ === undefined) {
+      first_step_ = PathStep(json_spec);
+      last_step_ = first_step_;
+    } else {
+      last_step_.AddAfter(json_spec);
     }
   }
 
@@ -218,6 +343,7 @@ function Pather(map, default_thumb_collection) {
     },
     GetActiveStep: function() {
       return active_step_;
-    }
+    },
+    AddStep: addStep
   };
 }

@@ -1,13 +1,10 @@
 function RoadTrip(roadtrip_id, num_stages) {
   var gallery_;
-  var next_stage_ = 0;
+  var next_stage_ = 1;
 
   var directions_service_ = new google.maps.DirectionsService();
 
   var animap_ = AniMap($('#map_canvas'));
-
-  function newGallery(images) {
-  }
 
   function mapToGallery() {
     var trans = animap_.carToCenterVector();
@@ -64,7 +61,7 @@ function RoadTrip(roadtrip_id, num_stages) {
     }
 
     // Initialize new gallery.
-    gallery_ = Gallery(json_data.images);
+    gallery_ = Gallery(roadtrip_id, json_data.images);
     gallery_.getDiv().addClass("hidden");
     gallery_.install($('#main_screen'));
 
@@ -85,13 +82,13 @@ function RoadTrip(roadtrip_id, num_stages) {
   $('#gallery_button').hide();
 
   $('#drive_button').click(function() {
-  			     $.getJSON('/get_map_path',
+  			     $.getJSON('/get_stage_data',
 				       {
 					 stage: next_stage_,
 					 id: roadtrip_id
 				       },
 				       startNewSegment);
-			     if (next_stage_ < num_stages - 1) {
+			     if (next_stage_ < num_stages) {
 			       next_stage_++;
 			     }
   			   });
@@ -112,8 +109,9 @@ function RoadTrip(roadtrip_id, num_stages) {
 
   // Auto hiding of controlls on iddle mouse.
   var mouse_moved_ = true;
+  var mouse_on_button_ = false;
   var tick_ = function() {
-    if (mouse_moved_) {
+    if (mouse_moved_ || mouse_on_button_) {
       $('.controlls').removeClass('hidden');
     } else {
       $('.controlls').addClass('hidden');
@@ -124,5 +122,11 @@ function RoadTrip(roadtrip_id, num_stages) {
   $('#main_screen').mousemove(function(e) {
 				mouse_moved_ = true;
 			      });
+  $('.button').mouseenter(function(e) {
+			    mouse_on_button_ = true;
+			  });
+  $('.button').mouseleave(function(e) {
+			    mouse_on_button_ = false;
+			  });
   setInterval(tick_, 100);
 }

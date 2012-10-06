@@ -1,4 +1,4 @@
-function Gallery(image_urls) {
+function Gallery(roadtrip_id, image_ids) {
   var div_ = $('<div class="gallery"></div>');
   var api_ = {};
   var current_ = 0;
@@ -7,9 +7,9 @@ function Gallery(image_urls) {
   var image_;
   var next_image_;
 
-  function newImage(url, hidden, prepend) {
+  function newImage(id, hidden, prepend) {
     var pane = $('<div class="image_pane"></div>');
-    var image = $('<img src="' + url + '" class="bigimage"/>');
+    var image = $('<img src="/static/' + roadtrip_id + '/' + id + '" class="bigimage"/>');
     pane.append(image);
     if (hidden) {
       pane.addClass('hidden');
@@ -25,9 +25,9 @@ function Gallery(image_urls) {
   var images_ = $('<div></div>');
   div_.append(images_);
 
-  image_ = newImage(image_urls[0]);
-  if (image_urls.length > 1) {
-    next_image_ = newImage(image_urls[1], true);
+  image_ = newImage(image_ids[0]);
+  if (image_ids.length > 1) {
+    next_image_ = newImage(image_ids[1], true);
   }
 
   var controlls_ = $('<div class="controlls"></div>'); 
@@ -44,7 +44,7 @@ function Gallery(image_urls) {
       left_nav_.addClass('hidden');
     }
 
-    if (current_ < image_urls.length - 1) {
+    if (current_ < image_ids.length - 1) {
       right_nav_.removeClass('hidden');
     } else {
       right_nav_.addClass('hidden');
@@ -56,7 +56,7 @@ function Gallery(image_urls) {
   };
 
   api_.goNext = function() {
-    if (current_ >= image_urls.length - 1) {
+    if (current_ >= image_ids.length - 1) {
       return;
     }
     if (prev_image_ !== undefined) {
@@ -66,8 +66,8 @@ function Gallery(image_urls) {
     image_ = next_image_;
     image_.removeClass('hidden');
     current_++;
-    if (current_ < image_urls.length - 1) {
-      next_image_ = newImage(image_urls[current_ + 1], true);
+    if (current_ < image_ids.length - 1) {
+      next_image_ = newImage(image_ids[current_ + 1], true);
     } else {
       next_image_ = undefined;
     }
@@ -86,7 +86,7 @@ function Gallery(image_urls) {
     next_image_.addClass('hidden');
     current_--;
     if (current_ > 0) {
-      prev_image_ = newImage(image_urls[current_ - 1], false, true);
+      prev_image_ = newImage(image_ids[current_ - 1], false, true);
     } else {
       prev_image_ = undefined;
     }

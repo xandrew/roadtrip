@@ -30,9 +30,9 @@ def main(global_config, **settings):
     config.add_subscriber(add_mongo_db, NewRequest)
 
     config.add_route('home', '/')
-    config.add_route('get_map_path', '/get_map_path')
+    config.add_route('get_trip_data', '/get_trip_data')
+    config.add_route('get_stage_data', '/get_stage_data')
     config.add_route('save', '/save')
-    config.add_route('all_images', '/all_images')
 
     config.scan()
     return config.make_wsgi_app()

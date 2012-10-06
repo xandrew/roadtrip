@@ -1,7 +1,7 @@
 function AniMap(map_canvas) {
   // Constants. For now at least...
   var tick = 5;
-  var drive_length = 500;
+  var drive_length = 5000;
   var car_height_px = 48;
   var car_width_px = 21;
 
@@ -82,7 +82,7 @@ function AniMap(map_canvas) {
     var overlayProjection = this.getProjection();
     var bounds = new google.maps.LatLngBounds(pos, pos);
     var div_pos = this.getDivPos();
-    var max_diam = Math.max(car_width_px, car_height_px);
+    var max_diam = Math.max(car_width_px, car_height_px) * 5;
     bounds.extend(overlayProjection.fromDivPixelToLatLng(
 		    new google.maps.Point(div_pos.x + max_diam,
 					  div_pos.y + max_diam)));
@@ -214,8 +214,16 @@ function AniMap(map_canvas) {
 	     y: map_center.y - car_position.y };
   };
 
-  api_.setVehicle = function(vehicle_url) {
-    car_img_.src = vehicle_url;
+  api_.setVehicle = function(vehicle) {
+    if (vehicle == 'plane') {
+      car_img_.src = 'plane.png';
+    } else if (vehicle == 'bicycle') {
+      car_img_.src = 'bicycle_turned.png';
+    } else if (vehicle == 'car') {
+      car_img_.src = 'car.png';
+    } else {
+      alert('Ejnye!' + vehicle);
+    }
   };
 
   api_.getZoom = function() {
