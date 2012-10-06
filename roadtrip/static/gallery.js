@@ -2,8 +2,6 @@ function Gallery(image_urls) {
   var div_ = $('<div class="gallery"></div>');
   var api_ = {};
   var current_ = 0;
-  var mouse_moved_ = true;
-  var timer_ = null;
 
   var prev_image_;
   var image_;
@@ -39,6 +37,20 @@ function Gallery(image_urls) {
   controlls_.append(right_nav_);
   div_.append(controlls_);
 
+  function showHideArrows() {
+    if (current_ > 0) {
+      left_nav_.removeClass('hidden');
+    } else {
+      left_nav_.addClass('hidden');
+    }
+
+    if (current_ < image_urls.length - 1) {
+      right_nav_.removeClass('hidden');
+    } else {
+      right_nav_.addClass('hidden');
+    }
+  };
+
   api_.getDiv = function() {
     return div_;
   };
@@ -59,6 +71,7 @@ function Gallery(image_urls) {
     } else {
       next_image_ = undefined;
     }
+    showHideArrows();
   };
 
   api_.goBack = function() {
@@ -77,42 +90,17 @@ function Gallery(image_urls) {
     } else {
       prev_image_ = undefined;
     }
-  };
-
-  var tick_ = function() {
-    if (current_ > 0) {
-      left_nav_.removeClass('hidden');
-    } else {
-      left_nav_.addClass('hidden');
-    }
-
-    if (current_ < image_urls.length - 1) {
-      right_nav_.removeClass('hidden');
-    } else {
-      right_nav_.addClass('hidden');
-    }
-
-    if (mouse_moved_) {
-      $('.controlls').removeClass('hidden');
-    } else {
-      $('.controlls').addClass('hidden');
-    }
-    mouse_moved_ = false;
+    showHideArrows();
   };
 
   api_.install = function(parent) {
     parent.append(div_);
     right_nav_.click(api_.goNext);
     left_nav_.click(api_.goBack);
-    div_.mousemove(function(e) {
-		     mouse_moved_ = true;
-		   });
-    timer_ = setInterval(tick_, 100);
   };
 
   api_.remove = function() {
     div_.remove();
-    clearInterval(timer_);
   };
 
   return api_;

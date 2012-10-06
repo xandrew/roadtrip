@@ -174,7 +174,7 @@ function AniMap(map_canvas) {
     path_ = path;
     full_length_ = google.maps.geometry.spherical.computeLength(path);
     if (path_line_ !== undefined) {
-      path_line_.setMap(null);
+      path_line_.setOptions({ strokeColor: 'blue' });
     }
     path_line_ = new google.maps.Polyline(
       { path: path_,

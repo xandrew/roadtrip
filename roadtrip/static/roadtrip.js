@@ -9,21 +9,33 @@ function RoadTrip(roadtrip_id, num_stages) {
   function newGallery(images) {
   }
 
-  function mapToSecond() {
+  function mapToGallery() {
     var trans = animap_.carToCenterVector();
 
-    console.log(trans);
-    
+    // Set translation so that we zoom right onto the car.
     jss('#map_container.zoomed').set(
       '-webkit-transform',
       'scale(10) translate(' + trans.x + 'px, '+ trans.y + 'px)');
     $("#map_container").addClass("zoomed");
 
     gallery_.getDiv().removeClass("hidden");
+    gallery_.getDiv().on(
+      'webkitTransitionEnd.phase_in_end',
+      function(e) {
+	if (e.target === this) {
+	  gallery_.getDiv().off('webkitTransitionEnd.phase_in_end');
+	  $("#map_container").removeClass("zoomed");
+	  animap_.centerOnCar();
+	  $('#button_pane').show();
+	  switchToGallery();
+	}
+      });
   }
-  animap_.onArrival(mapToSecond);
+  animap_.onArrival(mapToGallery);
 
   function startNewSegment(json_data) {
+    $('#button_pane').hide();
+
     var path = new Array();
 
     // Initialize map.
@@ -42,10 +54,13 @@ function RoadTrip(roadtrip_id, num_stages) {
     // What to phase out?
     var to_phase_out;
     if (gallery_ !== undefined) {
-      to_phase_out = gallery_.getDiv();
+      to_phase_out = gallery_;
     } else {
       animap_.centerOnCar();
-      to_phase_out = $('#welcome_screen');
+      to_phase_out = {
+	remove: function() { $('#welcome_screen').remove(); },
+	getDiv: function() { return $('#welcome_screen'); }
+      };
     }
 
     // Initialize new gallery.
@@ -54,16 +69,20 @@ function RoadTrip(roadtrip_id, num_stages) {
     gallery_.install($('#main_screen'));
 
     // Phase out start screen or old gallery, start map when done.
-    $("#map_container").removeClass('zoomed');
-    to_phase_out.on('webkitTransitionEnd',
-		    function(e) {
-		      if (e.target === this) {
-			to_phase_out.remove();
-			animap_.start();
-		      }
-		    });
-    to_phase_out.addClass('hidden');
+    to_phase_out.getDiv().on(
+      'webkitTransitionEnd.phase_out_end',
+      function(e) {
+	if (e.target === this) {
+	  to_phase_out.getDiv().off('webkitTransitionEnd.phase_out_end');
+	  to_phase_out.remove();
+	  animap_.start();
+	}
+      });
+    to_phase_out.getDiv().addClass('hidden');
   }
+
+  $('#map_button').hide();
+  $('#gallery_button').hide();
 
   $('#drive_button').click(function() {
   			     $.getJSON('/get_map_path',
@@ -76,4 +95,34 @@ function RoadTrip(roadtrip_id, num_stages) {
 			       next_stage_++;
 			     }
   			   });
+
+  function switchToMap() {
+    $('.gallery').addClass('minimized');
+    $('#map_button').hide();
+    $('#gallery_button').show();
+  }
+  function switchToGallery() {
+    $('.gallery').removeClass('minimized');
+    $('#gallery_button').hide();
+    $('#map_button').show();
+  }
+
+  $('#map_button').click(switchToMap);
+  $('#gallery_button').click(switchToGallery);
+
+  // Auto hiding of controlls on iddle mouse.
+  var mouse_moved_ = true;
+  var tick_ = function() {
+    if (mouse_moved_) {
+      $('.controlls').removeClass('hidden');
+    } else {
+      $('.controlls').addClass('hidden');
+    }
+    mouse_moved_ = false;
+  };
+
+  $('#main_screen').mousemove(function(e) {
+				mouse_moved_ = true;
+			      });
+  setInterval(tick_, 100);
 }
