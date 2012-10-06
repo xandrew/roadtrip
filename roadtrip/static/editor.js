@@ -34,6 +34,7 @@ function Editor(roadtrip_id) {
       result['stage' + stage_id++] = stage;
       stage.path = actual_step.GetPath();
       stage.vehicle = 'bicycle_turned.png';
+      stage.zoom = 10;
       stage.images = [];
       var thumbs = actual_step.GetCollection().GetThumbs();
       for (var i = 0; i < thumbs.length; i++) {
