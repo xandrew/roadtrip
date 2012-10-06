@@ -8,12 +8,16 @@ from pyramid.view import view_config
 def my_view(request):
     return {'project':'roadtrip'}
 
+def get_active_version(db, trip_id):
+    versions = db.versions.find_one({'trip_id': trip_id})
+    return versions and db.trips.find_one(
+        {'trip_id': trip_id, '_id': versions['active_version']})
+
 @view_config(route_name='get_stage_data', renderer='json')
 def stage_data_view(request):
     stage = int(request.params['stage'])
     trip_id = request.params['id']
-    return request.db.trips.find_one(
-        {'trip_id': trip_id}, {'stages': 1})['stages'][stage]
+    return get_active_version(request.db, trip_id)['stages'][stage]
 
 def get_all_images(trip_id):
     return [fn for fn in sorted(os.listdir('roadtrip/static/' + trip_id))
@@ -22,7 +26,7 @@ def get_all_images(trip_id):
 @view_config(route_name='get_trip_data', renderer='json')
 def trip_data_view(request):
     trip_id = request.params['id']
-    trip = request.db.trips.find_one({'trip_id': trip_id})
+    trip = get_active_version(request.db, trip_id)
     if trip:
         del trip['_id']
     else:
@@ -43,7 +47,11 @@ def trip_data_view(request):
 def save_view(request):
     trip_id = request.params['id']
     data = json.loads(request.params['data'])
-    request.db.trips.remove({'trip_id': trip_id})
-    request.db.trips.insert(data)
+    version = request.db.trips.insert(data)
+    # TODO: make this an update.
+    request.db.versions.remove({'trip_id': trip_id})
+    request.db.versions.insert({
+            'trip_id': trip_id,
+            'active_version': version})
     return {}
 
