@@ -32,5 +32,5 @@ portugal_trip = {
         },
     }
 
-conn = pymongo.Connection()
-conn.roadtrip.trips.insert(portugal_trip)
+#conn = pymongo.Connection()
+#conn.roadtrip.trips.insert(portugal_trip)
