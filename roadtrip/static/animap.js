@@ -221,6 +221,8 @@ function AniMap(map_canvas) {
       car_img_.src = 'bicycle_turned.png';
     } else if (vehicle == 'car') {
       car_img_.src = 'car.png';
+    } else if (vehicle == 'train') {
+      car_img_.src = 'train.png';
     } else {
       alert('Ejnye!' + vehicle);
     }

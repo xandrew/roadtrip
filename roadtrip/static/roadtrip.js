@@ -1,4 +1,4 @@
-function RoadTrip(roadtrip_id, num_stages) {
+function RoadTrip(roadtrip_id) {
   var gallery_;
   var next_stage_ = 1;
 
@@ -17,6 +17,7 @@ function RoadTrip(roadtrip_id, num_stages) {
 			 image_descs_[value.image] = value.desc;
 		       });
 	      }
+	      num_stages_ = trip_data.stages.length - 1;
 	      $('#button_pane').show();
 	    });
 
@@ -102,9 +103,11 @@ function RoadTrip(roadtrip_id, num_stages) {
 					 id: roadtrip_id
 				       },
 				       startNewSegment);
-			     if (next_stage_ < num_stages) {
+			     if (next_stage_ < num_stages_) {
 			       next_stage_++;
-			     }
+                             } else {
+                               $('#drive_button').hide();
+                             }
   			   });
 
   function switchToMap() {

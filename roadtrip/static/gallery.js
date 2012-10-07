@@ -32,7 +32,7 @@ function Gallery(roadtrip_id, image_ids, image_descs) {
 
   var controlls_ = $('<div class="controlls"></div>'); 
   var left_nav_ = $('<div class="gallery_nav left hidden"><div class="arrow">&lt;</div></div>');
-  var right_nav_ = $('<div class="gallery_nav right"><div class="arrow">&gt;</div></div>');
+  var right_nav_ = $('<div class="gallery_nav right hidden"><div class="arrow">&gt;</div></div>');
   controlls_.append(left_nav_);
   controlls_.append(right_nav_);
   div_.append(controlls_);
@@ -68,7 +68,8 @@ function Gallery(roadtrip_id, image_ids, image_descs) {
     } else {
       right_nav_.addClass('hidden');
     }
-  };
+  }
+  showHideArrows();
 
   api_.getDiv = function() {
     return div_;

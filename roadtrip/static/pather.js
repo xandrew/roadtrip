@@ -22,6 +22,7 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
 			      '<option value="bicycle">Bicycle</option>' +
 			      '<option value="car">Car</option>' +
 			      '<option value="plane">Airplane</option>' +
+			      '<option value="train">Train</option>' +
 			      '<option value="walk">Walk</option>' +
 			      '</select>');
     var marker_;
@@ -122,7 +123,7 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
 	if (directions_to_renderer_ !== undefined) {
 	  directions_to_renderer_.setMap(null);
 	}
-	if (vehicle != 'plane') {
+	if ((vehicle != 'plane') && (vehicle != 'train')) {
 	  realDirections(result);
 	} else {
 	  var start = result.routes[0].overview_path[0];
@@ -136,7 +137,7 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
       if (prev_ !== undefined && api_.Value() != '' && prev_.Value() != '') {
 	var vehicle = vehicle_selector_.val();
 	var mode;
-	if ((vehicle == 'car') || (vehicle == 'plane')) {
+	if ((vehicle == 'car') || (vehicle == 'plane') || (vehicle == 'train')) {
 	  mode = google.maps.TravelMode.DRIVING;
 	} else {
 	  mode = google.maps.TravelMode.WALKING;
