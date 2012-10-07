@@ -29,6 +29,11 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
     var directions_real_;
 
     var thumb_collection_ = ThumbCollection(roadtrip_id, projector);
+    thumb_collection_.AddRemoveButtonTemplate(
+      '-',
+      function(image_id) {
+	default_thumb_collection.PrependImage(image_id);
+      });
 
     step_div_.append(input_);
 
@@ -90,7 +95,7 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
 
       if (json_spec.images !== undefined) {
 	for (var i = 0; i < json_spec.images.length; i++) {
-	  thumb_collection_.AddImage(json_spec.images[i]);
+	  thumb_collection_.AppendImage(json_spec.images[i]);
 	}
       }
     }
@@ -103,10 +108,7 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
       json_spec.zoom = zoom_;
       json_spec.images = [];
       json_spec.marker = marker_.getPosition();
-      var thumbs = thumb_collection_.GetThumbs();
-      for (var i = 0; i < thumbs.length; i++) {
-	json_spec.images.push(thumbs[i].GetImageId());
-      }
+      json_spec.images = thumb_collection_.GetImages();
       return json_spec;
     }
 
@@ -209,10 +211,10 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
 	directions_to_renderer_.setMap(null);
       }
       removeMarker();
-      var thumb = thumb_collection_.PopLast();
-      while (thumb !== undefined) {
-	default_thumb_collection.Prepend(thumb);
-	thumb = thumb_collection_.PopLast();
+      var image_id = thumb_collection_.PopLast();
+      while (image_id !== undefined) {
+	default_thumb_collection.PrependImage(image_id);
+	image_id = thumb_collection_.PopLast();
       }
     }
 
@@ -223,7 +225,6 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
       SetNext: function(next) { next_ = next; },
       SetPrev: function(prev) { prev_ = prev; reDrawInto(); },
       Value: function() { return input_.val(); },
-      GetCollection: function() { return thumb_collection_; },
       Activate: function() {
 	if (active_step_ === api_) {
 	  return;
@@ -261,6 +262,9 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
 	} else {
 	  last_step_ = next_;
 	}
+      },
+      AddImage: function(image_id) {
+	thumb_collection_.AppendImage(image_id);
       },
       ReDrawInto: reDrawInto,
       ToJSON: toJSON
@@ -314,22 +318,11 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
     return api_;
   }
 
-  /*
-  var first_step_ = PathStep();
-  first_step_.Activate();
-
-  function reDraw() {
-    var act_step = first_step_;
-    while (act_step !== undefined) {
-      act_step.ReDrawInto();
-      act_step = act_step.Next();
-    }
-  }*/
-
   function addStep(json_spec) {
     if (last_step_ === undefined) {
       first_step_ = PathStep(json_spec);
       last_step_ = first_step_;
+      first_step_.Activate();
     } else {
       last_step_.AddAfter(json_spec);
     }
@@ -344,6 +337,9 @@ function Pather(map, default_thumb_collection, roadtrip_id, projector) {
     GetActiveStep: function() {
       return active_step_;
     },
-    AddStep: addStep
+    AddStep: addStep,
+    AddImageToActiveCollection: function(image_id) {
+      active_step_.AddImage(image_id);
+    }
   };
 }

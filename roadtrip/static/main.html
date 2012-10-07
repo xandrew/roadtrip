@@ -32,6 +32,7 @@
       }
 
       #button_pane {
+        display: none;
         position: absolute;
         bottom: 0;
         left: 0;
@@ -87,11 +88,11 @@
 
       .gallery_nav.left {
         text-shadow: 3px 0px 1px grey;
-        left: 0%;
+        left: 0;
       }
       .gallery_nav.right {
         text-shadow: -3px 0px 1px grey;
-        left: 70%;
+        right: 0;
       }
 
       .arrow {
@@ -109,7 +110,25 @@
         left: 15%;
       }
       .gallery_nav.right .arrow {
-        left: 85%;
+        right: 15%;
+      }
+
+      .gallery_desc_pane {
+        position: absolute;
+        bottom: 0;
+        left: 30%;
+        width: 40%;
+        padding: 10px;
+      }
+      .gallery_desc_txt {
+        display:table;
+        text-align:center;
+        border-radius: 5px;
+        margin: 0px auto;
+        padding: 5px;
+        font-size: 20px;
+        color: black;
+        background-color:rgba(120,120,120,0.5);
       }
 
       .car {

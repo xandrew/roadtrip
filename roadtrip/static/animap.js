@@ -1,7 +1,7 @@
 function AniMap(map_canvas) {
   // Constants. For now at least...
   var tick = 5;
-  var drive_length = 5000;
+  var drive_length = 500;
   var car_height_px = 48;
   var car_width_px = 21;
 

@@ -2,74 +2,36 @@ function BreakDiv() {
   return $('<div style="clear:both"></div>');  
 }
 
-function ThumbCollection(roadtrip_id, projector_div) {
+function ThumbCollection(roadtrip_id, projector) {
   var outer_div_ = $('<div></div>');
   var div_ = $('<div class="thumb_collection"></div>');
   outer_div_.append(div_);
   outer_div_.append(BreakDiv());
   var thumbs_ = [];
+  var remove_button_htmls_ = [];
+  var remove_button_handlers_ = [];
 
   function Thumb(image_id) {
     var div_ = $('<div class="thumb"></div>');
-    var parent_;
+    var button_pane_ = $('<div class="thumb_button_pane"></div>');
     var thumb_url_ = '/static/' + roadtrip_id + '/thumb/' + image_id;
-    var full_url_ = '/static/' + roadtrip_id + '/' + image_id;
     var image_ = $('<img class="thumb_img" src="' + thumb_url_ + '"></img>');
     div_.append(image_);
-    var plus_button_ = $('<button>+</button>');
-    var plus_handler_;
-    var minus_button_ = $('<button>-</button>');
-    var minus_handler_;
-
-    function add_handlers_() {
-      plus_button_.click(function() {
-			   if (plus_handler_ !== undefined) {
-			     plus_handler_(api_);
-			   }
-			 });
-      minus_button_.click(function() {
-			    if (minus_handler_ !== undefined) {
-			      minus_handler_(api_);
-			    }
-			  });
-      image_.click(
-	function() {
-	  var big_image = $('<img class="projector_img" src="' + full_url_ + '"/>');
-	  projector_div.height('100%');
-	  projector_div.empty();
-	  projector_div.append(big_image);
-	  projector_div.click(function() { big_image.remove(); projector_div.height(0); });
-	});
+    div_.append(button_pane_);
+    for (var i = 0; i < remove_button_htmls_.length; i++) {
+      var button = $('<button class="thumb_button">' +
+		     remove_button_htmls_[i] +
+		     '</button>');
+      button_pane_.append(button);
+      function RegisterClick(current_i) {
+	button.click(function() { buttonClick(api_, current_i); });
+      };
+      RegisterClick(i);
     }
+    image_.click(
+      function() { projector.ShowImage(image_id); });
 
     var api_ = {
-      AppendTo: function(collection) {
-	collection.Append(api_);
-	parent_ = collection;
-	add_handlers_();
-      },
-      Remove: function() {
-	if (parent_ !== undefined) {
-	  parent_.Remove(api_);
-	}
-	parent_ = undefined;
-      },
-      ShowPlus: function(handler) {
-	div_.append(plus_button_);
-	plus_handler_ = handler;
-      },
-      HidePlus: function() {
-	plus_button_.remove();
-	plus_handler_ = undefined;
-      },
-      ShowMinus: function(handler) {
-	div_.append(minus_button_);
-	minus_handler_ = handler;
-      },
-      HideMinus: function() {
-	minus_button_.remove();
-	minus_handler_ = undefined;
-      },
       GetDiv: function() {
 	return div_;
       },
@@ -80,10 +42,6 @@ function ThumbCollection(roadtrip_id, projector_div) {
 
     return api_;
   }
-
-
-
-
 
   function indexOf(thumb) {
     for (var i = 0; i < thumbs_.length; i++) {
@@ -99,42 +57,45 @@ function ThumbCollection(roadtrip_id, projector_div) {
     thumbs_.splice(idx, 1);
   }
 
+  function buttonClick(thumb, button_idx) {
+    var idx = indexOf(thumb);
+    removeThumb(thumb, idx);
+    remove_button_handlers_[button_idx](thumb.GetImageId());
+  }
+
   var api_ = {
     GetDiv: function() {
       return outer_div_;
     },
-    Append: function(thumb) {
-      if (indexOf(thumb) === undefined) {
-	div_.append(thumb.GetDiv());
-	thumbs_.push(thumb);
-      }
+    // Should be called before adding any image.
+    AddRemoveButtonTemplate: function(html, handler) {
+      remove_button_htmls_.push(html);
+      remove_button_handlers_.push(handler);
     },
-    Prepend: function(thumb) {
-      if (indexOf(thumb) === undefined) {
-	div_.prepend(thumb.GetDiv());
-	thumbs_.splice(0, 0, thumb);
-      }
+    AppendImage: function(image_id) {
+      var thumb = Thumb(image_id);
+      thumbs_.push(thumb);
+      div_.append(thumb.GetDiv());
     },
-    Remove: function(thumb) {
-      var idx = indexOf(thumb);
-      if (idx !== undefined) {
-	removeThumb(thumb, idx);
-      }
+    PrependImage: function(image_id) {
+      var thumb = Thumb(image_id);
+      thumbs_.splice(0, 0, thumb);
+      div_.prepend(thumb.GetDiv());
     },
     PopLast: function() {
       if (thumbs_.length > 0) {
 	var thumb = thumbs_[thumbs_.length - 1];
 	removeThumb(thumb, thumbs_.length - 1);
-	return thumb;
+	return thumb.GetImageId();
       }
       return undefined;
     },
-    GetThumbs: function() { return thumbs_; },
-    AddImage: function(image_id) {
-      var thumb = Thumb(image_id);
-      thumb.AppendTo(api_);
-      thumb.ShowMinus(function(clicked_thumb) { clicked_thumb.Remove(); });
-      return thumb;
+    GetImages: function() {
+      var images = [];
+      $.each(thumbs_, function(idx, thumb) {
+	       images.push(thumb.GetImageId());
+	     });
+      return images;
     }
   };
   return api_;

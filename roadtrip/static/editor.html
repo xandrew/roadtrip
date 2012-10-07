@@ -20,12 +20,13 @@
         left: 0px;
         width: 60%;
         height: 0%;
+        text-align: center;
+        overflow: hidden;
       }
 
       .projector_img {
-        max-height: 100%;
+        max-height: 80%;
         max-width: 100%;
-        width: auto;
       }
 
       #editor_controlls {
@@ -36,9 +37,9 @@
       }
 
       .thumb {
-        text-align: center;
-        height: 100px;
-        width: 100px;
+        position: relative;
+        height: 90px;
+        width: 90px;
         float: left;
         border-style: solid;
         border-width: 1px;
@@ -48,8 +49,23 @@
       }
 
       .thumb_img {
-        height: 60px;
-        width: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 25px;
+        right: 0;
+        display: block;
+        margin: auto;
+        max-height: 65px;
+        max-width: 100%;
+      }
+
+      .thumb_button_pane {
+        position: absolute;
+        bottom: 0px;
+        width: 100%;
+        height: 25px;
+        text-align: center;
       }
 
       .path_step {

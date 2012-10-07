@@ -5,6 +5,20 @@ function RoadTrip(roadtrip_id, num_stages) {
   var directions_service_ = new google.maps.DirectionsService();
 
   var animap_ = AniMap($('#map_canvas'));
+  var image_descs_ = {};
+  $('#button_pane').hide();
+  $.getJSON('/get_trip_data',
+	    {
+	      id: roadtrip_id
+	    },
+	    function(trip_data) {
+	      if (trip_data.image_descs !== undefined) {
+		$.each(trip_data.image_descs, function(idx, value) {
+			 image_descs_[value.image] = value.desc;
+		       });
+	      }
+	      $('#button_pane').show();
+	    });
 
   function mapToGallery() {
     var trans = animap_.carToCenterVector();
@@ -61,7 +75,7 @@ function RoadTrip(roadtrip_id, num_stages) {
     }
 
     // Initialize new gallery.
-    gallery_ = Gallery(roadtrip_id, json_data.images);
+    gallery_ = Gallery(roadtrip_id, json_data.images, image_descs_);
     gallery_.getDiv().addClass("hidden");
     gallery_.install($('#main_screen'));
 
